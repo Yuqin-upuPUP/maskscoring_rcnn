@@ -180,7 +180,11 @@ _C.MODEL.ROI_BOX_HEAD.PREDICTOR = "FastRCNNPredictor"
 _C.MODEL.ROI_BOX_HEAD.POOLER_RESOLUTION = 14
 _C.MODEL.ROI_BOX_HEAD.POOLER_SAMPLING_RATIO = 0
 _C.MODEL.ROI_BOX_HEAD.POOLER_SCALES = (1.0 / 16,)
-_C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 81
+# 20201214------------------------------------------------------------------
+# _C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 81
+_C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 10
+_C.MODEL.ROI_BOX_HEAD.NUM_MATERIAL = 7
+# 20201214------------------------------------------------------------------
 # Hidden layer dimension when using an MLP for the RoI box head
 _C.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM = 1024
 
@@ -273,3 +277,5 @@ _C.TEST.IMS_PER_BATCH = 8
 _C.OUTPUT_DIR = "models/"
 
 _C.PATHS_CATALOG = os.path.join(os.path.dirname(__file__), "paths_catalog.py")
+
+_C.TENSORBOARD_EXPERIMENT = "logs/maskrcnn-benchmark"

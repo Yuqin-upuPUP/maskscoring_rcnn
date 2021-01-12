@@ -37,6 +37,7 @@ def compute_on_dataset(model, data_loader, device):
 
 
 def prepare_for_coco_detection(predictions, dataset):
+
     # assert isinstance(dataset, COCODataset)
     coco_results = []
     for image_id, prediction in enumerate(predictions):
@@ -54,19 +55,28 @@ def prepare_for_coco_detection(predictions, dataset):
         scores = prediction.get_field("scores").tolist()
         labels = prediction.get_field("labels").tolist()
 
+        # 20201214------------------------------------------------------------------
+        material_scores = prediction.get_field("material_scores").tolist()
+        material_labels = prediction.get_field("material_labels").tolist()
+
         mapped_labels = [dataset.contiguous_category_id_to_json_id[i] for i in labels]
+        mapped_material_labels = [dataset.contiguous_material_id_to_json_id[i] if i else 0 for i in material_labels]
 
         coco_results.extend(
             [
                 {
                     "image_id": original_id,
                     "category_id": mapped_labels[k],
+                    "material_id": mapped_material_labels[k],
                     "bbox": box,
                     "score": scores[k],
+                    "material_score": material_scores[k]
+                    # 20201214------------------------------------------------------------------
                 }
                 for k, box in enumerate(boxes)
             ]
         )
+
     return coco_results
 
 
@@ -102,6 +112,9 @@ def prepare_for_coco_segmentation(predictions, dataset, maskiou_on):
         else:
             scores = prediction.get_field("scores").tolist()
         labels = prediction.get_field("labels").tolist()
+        # 20201214------------------------------------------------------------------
+        material_scores = prediction.get_field("material_scores").tolist()
+        material_labels = prediction.get_field("material_labels").tolist()
 
         # rles = prediction.get_field('mask')
 
@@ -113,18 +126,23 @@ def prepare_for_coco_segmentation(predictions, dataset, maskiou_on):
             rle["counts"] = rle["counts"].decode("utf-8")
 
         mapped_labels = [dataset.contiguous_category_id_to_json_id[i] for i in labels]
+        mapped_material_labels = [dataset.contiguous_material_id_to_json_id[i] if i else 0 for i in material_labels]
 
         coco_results.extend(
             [
                 {
                     "image_id": original_id,
                     "category_id": mapped_labels[k],
+                    "material_id": mapped_material_labels[k],
                     "segmentation": rle,
                     "score": scores[k],
+                    "material_score": material_scores[k]
+                    # 20201214------------------------------------------------------------------
                 }
                 for k, rle in enumerate(rles)
             ]
         )
+
     return coco_results
 
 

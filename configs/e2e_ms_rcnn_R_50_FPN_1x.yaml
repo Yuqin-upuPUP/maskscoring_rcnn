@@ -31,8 +31,14 @@ MODEL:
   MASK_ON: True
   MASKIOU_ON: True
 DATASETS:
-  TRAIN: ("coco_2014_train", "coco_2014_valminusminival")  
-  TEST: ("coco_2014_minival",)
+  # 20201209 添加python搜索路径------------------------------------------------------------------------------------------
+#  TRAIN: ("coco_2014_train", "coco_2014_valminusminival")
+#  TEST: ("coco_2014_minival",)
+#  TRAIN: ("coco_2017_train", )
+#  TEST: ("coco_2017_val",)
+  TRAIN: ("coco_midea_train", )
+  TEST: ("coco_midea_val",)
+  # 20201209 添加python搜索路径------------------------------------------------------------------------------------------
 DATALOADER:
   SIZE_DIVISIBILITY: 32
 SOLVER:

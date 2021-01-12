@@ -7,6 +7,7 @@ import os
 class DatasetCatalog(object):
     DATA_DIR = "datasets"
     DATASETS = {
+        # 20201209 添加python搜索路径------------------------------------------------------------------------------------
         "coco_2014_train": (
             "coco/train2014",
             "coco/annotations/instances_train2014.json",
@@ -20,6 +21,25 @@ class DatasetCatalog(object):
             "coco/val2014",
             "coco/annotations/instances_valminusminival2014.json",
         ),
+
+        "coco_2017_train": (
+            "coco2017/train2017",
+            "coco2017/annotations/instances_train2017.json",
+        ),
+        "coco_2017_val": (
+            "coco2017/val2017",
+            "coco2017/annotations/instances_val2017.json",
+        ),
+
+        "coco_midea_train": (
+            "midea/train",
+            "midea/annotations/train_data.json",
+        ),
+        "coco_midea_val": (
+            "midea/val",
+            "midea/annotations/val_data.json",
+        ),
+        # 20201209 添加python搜索路径------------------------------------------------------------------------------------
     }
 
     @staticmethod

@@ -12,12 +12,19 @@ class FastRCNNPredictor(nn.Module):
         num_inputs = res2_out_channels * stage2_relative_factor
 
         num_classes = config.MODEL.ROI_BOX_HEAD.NUM_CLASSES
+        # 20201214------------------------------------------------------------------
+        num_material = config.MODEL.ROI_BOX_HEAD.NUM_MATERIAL
         self.avgpool = nn.AvgPool2d(kernel_size=7, stride=7)
         self.cls_score = nn.Linear(num_inputs, num_classes)
+        self.material_score = nn.Linear(num_inputs, num_material)
         self.bbox_pred = nn.Linear(num_inputs, num_classes * 4)
 
         nn.init.normal_(self.cls_score.weight, mean=0, std=0.01)
         nn.init.constant_(self.cls_score.bias, 0)
+
+        nn.init.normal_(self.material_score.weight, mean=0, std=0.01)
+        nn.init.constant_(self.material_score.bias, 0)
+        # 20201214------------------------------------------------------------------
 
         nn.init.normal_(self.bbox_pred.weight, mean=0, std=0.001)
         nn.init.constant_(self.bbox_pred.bias, 0)
@@ -26,29 +33,40 @@ class FastRCNNPredictor(nn.Module):
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         cls_logit = self.cls_score(x)
+        # 20201214------------------------------------------------------------------
+        material_logit = self.material_score(x)
         bbox_pred = self.bbox_pred(x)
-        return cls_logit, bbox_pred
+        return cls_logit, material_logit, bbox_pred
+        # 20201214------------------------------------------------------------------
 
 
 class FPNPredictor(nn.Module):
     def __init__(self, cfg):
         super(FPNPredictor, self).__init__()
         num_classes = cfg.MODEL.ROI_BOX_HEAD.NUM_CLASSES
+        # 20201214------------------------------------------------------------------
+        num_material = cfg.MODEL.ROI_BOX_HEAD.NUM_MATERIAL
         representation_size = cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM
 
         self.cls_score = nn.Linear(representation_size, num_classes)
+        self.material_score = nn.Linear(representation_size, num_material)
         self.bbox_pred = nn.Linear(representation_size, num_classes * 4)
 
         nn.init.normal_(self.cls_score.weight, std=0.01)
+        nn.init.normal_(self.material_score.weight, std=0.01)
         nn.init.normal_(self.bbox_pred.weight, std=0.001)
-        for l in [self.cls_score, self.bbox_pred]:
+        for l in [self.cls_score, self.material_score, self.bbox_pred]:
+        # 20201214------------------------------------------------------------------
             nn.init.constant_(l.bias, 0)
 
     def forward(self, x):
         scores = self.cls_score(x)
+        # 20201214------------------------------------------------------------------
+        material_scores = self.material_score(x)
         bbox_deltas = self.bbox_pred(x)
 
-        return scores, bbox_deltas
+        return scores, material_scores, bbox_deltas
+        # 20201214------------------------------------------------------------------
 
 
 _ROI_BOX_PREDICTOR = {
