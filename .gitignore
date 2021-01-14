@@ -1,4 +1,11 @@
-pretrained_models/
 .idea/
+build/
+maskrcnn_benchmark.egg-info/
+maskrcnn_benchmark/_C.cpython-36m-x86_64-linux-gnu.so
 datasets/
+pretrained_models/
 **/__pycache__
+*.log
+logs/
+models/
+experiments/
