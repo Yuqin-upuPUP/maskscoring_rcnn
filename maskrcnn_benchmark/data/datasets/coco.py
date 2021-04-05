@@ -85,7 +85,7 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
 
         # 20201214------------------------------------------------------------------
         materials = [obj["material_id"] for obj in anno]
-        materials = [self.json_category_id_to_contiguous_id[c] for c in materials]
+        materials = [self.json_material_id_to_contiguous_id[c] for c in materials]
         materials = torch.tensor(materials)
         target.add_field("material_labels", materials)
         # 20201214------------------------------------------------------------------
