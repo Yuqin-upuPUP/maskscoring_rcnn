@@ -271,7 +271,7 @@ def evaluate_predictions_on_coco(
     with open(json_result_file, "w") as f:
         json.dump(coco_results, f)
 
-    from pycocotools.cocoeval import COCOeval
+    from utils.multi_cocoeval import COCOeval
 
     coco_dt = coco_gt.loadRes(str(json_result_file))
     # coco_dt = coco_gt.loadRes(coco_results)
