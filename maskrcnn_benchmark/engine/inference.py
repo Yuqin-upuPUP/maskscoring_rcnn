@@ -306,8 +306,8 @@ def _accumulate_predictions_from_multiple_gpus(predictions_per_gpu):
 
 class COCOResults(object):
     METRICS = {
-        "bbox": ["AP", "AP50", "AP75", "APs", "APm", "APl"],
-        "segm": ["AP", "AP50", "AP75", "APs", "APm", "APl"],
+        "bbox": ["AP", "AP50", "AP75", "APs", "APm", "APl", "material_AP", "material_AP50", "material_AP75", "material_APs", "material_APm", "material_APl"],
+        "segm": ["AP", "AP50", "AP75", "APs", "APm", "APl", "material_AP", "material_AP50", "material_AP75", "material_APs", "material_APm", "material_APl"],
         "box_proposal": [
             "AR@100",
             "ARs@100",
