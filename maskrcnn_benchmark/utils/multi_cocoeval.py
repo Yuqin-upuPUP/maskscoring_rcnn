@@ -514,7 +514,7 @@ class COCOeval:
                                 ss[ri] = material_dtScoresSorted[pi]
                         except:
                             pass
-                        precision[t,:,k,a,m] = np.array(q)
+                        material_precision[t,:,k,a,m] = np.array(q)
                         material_scores[t,:,k,a,m] = np.array(ss)
         self.eval = {
             'params': p,

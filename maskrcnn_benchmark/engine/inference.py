@@ -271,7 +271,7 @@ def evaluate_predictions_on_coco(
     with open(json_result_file, "w") as f:
         json.dump(coco_results, f)
 
-    from utils.multi_cocoeval import COCOeval
+    from ..utils.multi_cocoeval import COCOeval
 
     coco_dt = coco_gt.loadRes(str(json_result_file))
     # coco_dt = coco_gt.loadRes(coco_results)
@@ -334,9 +334,9 @@ class COCOResults(object):
     def update(self, coco_eval):
         if coco_eval is None:
             return
-        from pycocotools.cocoeval import COCOeval
+        # from pycocotools.cocoeval import COCOeval
 
-        assert isinstance(coco_eval, COCOeval)
+        # assert isinstance(coco_eval, COCOeval)
         s = coco_eval.stats
         iou_type = coco_eval.params.iouType
         res = self.results[iou_type]
