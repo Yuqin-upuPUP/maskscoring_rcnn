@@ -540,7 +540,7 @@ class COCOeval:
             iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}'
 
             if material_flag:
-                titleStr = 'Material Average Precision' if ap == 1 else 'Average Recall'
+                titleStr = 'Material Average Precision' if ap == 1 else 'Material Average Recall'
             else:
                 titleStr = 'Average Precision' if ap == 1 else 'Average Recall'
             typeStr = '(AP)' if ap==1 else '(AR)'
@@ -582,39 +582,33 @@ class COCOeval:
             stats = np.zeros((24,))
 
             stats[0] = _summarize(1)
-            stats[1] = _summarize(1, material_flag=True)
+            stats[1] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2])
+            stats[2] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[2])
+            stats[3] = _summarize(1, areaRng='small', maxDets=self.params.maxDets[2])
+            stats[4] = _summarize(1, areaRng='medium', maxDets=self.params.maxDets[2])
+            stats[5] = _summarize(1, areaRng='large', maxDets=self.params.maxDets[2])
 
-            stats[2] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2])
-            stats[3] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2], material_flag=True)
-
-            stats[4] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[2])
-            stats[5] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[2], material_flag=True)
-
-            stats[6] = _summarize(1, areaRng='small', maxDets=self.params.maxDets[2])
-            stats[7] = _summarize(1, areaRng='small', maxDets=self.params.maxDets[2], material_flag=True)
-
-            stats[8] = _summarize(1, areaRng='medium', maxDets=self.params.maxDets[2])
-            stats[9] = _summarize(1, areaRng='medium', maxDets=self.params.maxDets[2], material_flag=True)
-
-            stats[10] = _summarize(1, areaRng='large', maxDets=self.params.maxDets[2])
+            # material precision
+            stats[6] = _summarize(1, material_flag=True)
+            stats[7] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2], material_flag=True)
+            stats[8] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[2], material_flag=True)
+            stats[9] = _summarize(1, areaRng='small', maxDets=self.params.maxDets[2], material_flag=True)
+            stats[10] = _summarize(1, areaRng='medium', maxDets=self.params.maxDets[2], material_flag=True)
             stats[11] = _summarize(1, areaRng='large', maxDets=self.params.maxDets[2], material_flag=True)
 
             stats[12] = _summarize(0, maxDets=self.params.maxDets[0])
-            stats[13] = _summarize(0, maxDets=self.params.maxDets[0], material_flag=True)
-
             stats[14] = _summarize(0, maxDets=self.params.maxDets[1])
-            stats[15] = _summarize(0, maxDets=self.params.maxDets[1], material_flag=True)
-
             stats[16] = _summarize(0, maxDets=self.params.maxDets[2])
-            stats[17] = _summarize(0, maxDets=self.params.maxDets[2], material_flag=True)
-
             stats[18] = _summarize(0, areaRng='small', maxDets=self.params.maxDets[2])
-            stats[19] = _summarize(0, areaRng='small', maxDets=self.params.maxDets[2], material_flag=True)
-
             stats[20] = _summarize(0, areaRng='medium', maxDets=self.params.maxDets[2])
-            stats[21] = _summarize(0, areaRng='medium', maxDets=self.params.maxDets[2], material_flag=True)
-
             stats[22] = _summarize(0, areaRng='large', maxDets=self.params.maxDets[2])
+
+            # material recall
+            stats[13] = _summarize(0, maxDets=self.params.maxDets[0], material_flag=True)
+            stats[15] = _summarize(0, maxDets=self.params.maxDets[1], material_flag=True)
+            stats[17] = _summarize(0, maxDets=self.params.maxDets[2], material_flag=True)
+            stats[19] = _summarize(0, areaRng='small', maxDets=self.params.maxDets[2], material_flag=True)
+            stats[21] = _summarize(0, areaRng='medium', maxDets=self.params.maxDets[2], material_flag=True)
             stats[23] = _summarize(0, areaRng='large', maxDets=self.params.maxDets[2], material_flag=True)
 
             return stats
