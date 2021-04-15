@@ -184,6 +184,8 @@ _C.MODEL.ROI_BOX_HEAD.POOLER_SCALES = (1.0 / 16,)
 # _C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 81
 _C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 10
 _C.MODEL.ROI_BOX_HEAD.NUM_MATERIAL = 7
+# class_names = ['BG', 'bowl', 'cup', 'plate', 'red-wine', "milk pan", "frying pan", "stockpot", "Wok", "enamel"]
+# material_names = ['Universal', 'ceramic', 'glass', 'stainless steel', 'plastics', 'woody', 'other']
 # 20201214------------------------------------------------------------------
 # Hidden layer dimension when using an MLP for the RoI box head
 _C.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM = 1024
