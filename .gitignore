@@ -9,3 +9,4 @@ pretrained_models/
 logs/
 models/
 experiments/
+gpu2_experiments/
