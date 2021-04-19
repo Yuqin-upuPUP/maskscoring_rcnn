@@ -3,6 +3,7 @@
 
 import os
 import numpy as np
+import json
 import cv2
 from maskrcnn_benchmark.config import cfg
 from predictor import COCODemo
@@ -18,11 +19,46 @@ cfg.merge_from_list(["MODEL.DEVICE", "cpu"])
 
 print(cfg.MODEL.WEIGHT)
 
+def mask_to_seg(mask):
+    seg = []
+    # Mask Polygon
+    # Pad to ensure proper polygons for masks that touch image edges.
+    padded_mask = np.zeros(
+        (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+    padded_mask[1:-1, 1:-1] = mask
+    contours = cv2.find_contours(padded_mask, 0.5)
+    for verts in contours:
+        # Subtract the padding and flip (y, x) to (x, y)
+        verts = np.fliplr(verts) - 1
+        seg.append(verts.tolist())
+    return seg
+
 coco_demo = COCODemo(
     cfg,
     min_image_size=800,
     confidence_threshold=0.5,  # 3.设置置信度
 )
+
+categories = [
+    {"supercategory": "tableware", "id": 1, "name": "bowl"},
+    {"supercategory": "tableware", "id": 2, "name": "cup"},
+    {"supercategory": "tableware", "id": 3, "name": "plate"},
+    {"supercategory": "tableware", "id": 4, "name": "red-wine"},
+    {"supercategory": "tableware", "id": 5, "name": "milk pan"},
+    {"supercategory": "tableware", "id": 6, "name": "frying pan"},
+    {"supercategory": "tableware", "id": 7, "name": "stockpot"},
+    {"supercategory": "tableware", "id": 8, "name": "Wok"},
+    {"supercategory": "tableware", "id": 9, "name": "enamel"}
+]
+
+materials = [
+    {"supercategory": "material", "id": 1, "name": "pottery and porcelain"},
+    {"supercategory": "material", "id": 2, "name": "glass"},
+    {"supercategory": "material", "id": 3, "name": "stainless steel"},
+    {"supercategory": "material", "id": 4, "name": "plastics"},
+    {"supercategory": "material", "id": 5, "name": "woody"},
+    {"supercategory": "material", "id": 6, "name": "other"}
+]
 
 if __name__ == '__main__':
 
@@ -32,6 +68,12 @@ if __name__ == '__main__':
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
 
+    json_dict = dict()
+    images = list()
+    annotations = list()
+
+    annotation_id = 0
+
     print(sorted(os.listdir(in_folder), key=lambda x:int(x[:-4])))
     for file_name in sorted(os.listdir(in_folder), key=lambda x:int(x[:-4])):
         if not file_name.endswith(('jpg', 'png', 'bmp')):
@@ -40,6 +82,13 @@ if __name__ == '__main__':
         # load file
         img_path = os.path.join(in_folder, file_name)
         image = cv2.imread(img_path)
+
+        image_dict = dict()
+        image_dict['id'] = len(images) + 1  # 从1开始
+        image_dict['height'], image_dict['width'], _ = image.shape  # (960, 1280, 3)
+        image_dict['file_name'] = file_name
+
+        images.append(image_dict)
 
         print(img_path)
 
@@ -66,10 +115,26 @@ if __name__ == '__main__':
         material_labels = top_predictions.get_field("material_labels").numpy()  # label = labelList[np.argmax(scores)]
         material_scores = top_predictions.get_field("material_scores").numpy()
         masks = top_predictions.get_field("mask").numpy()
+        areas = top_predictions.area()
+
+        annotation = dict()
 
         for i in range(len(boxes)):
+            annotation['id'] = annotation_id  # 整个测试集上计数
+            annotation_id += 1
+            annotation['annotation_id'] = i  # 每张图片独立计数
+            annotation['image_id'] = image_dict['id']
+            annotation['category_id'] = labels[i]
+            annotation['material_id'] = material_labels[i]
+            annotation['segmentation'] = [mask_to_seg(m) for m in masks[i]]
+            annotation['bbox'] = [round(x) for x in boxes[i]]
+            annotation['area'] = areas[i]
+            annotation['iscrowd'] = 0
+
+            annotations.append(annotation)
+
             print('box:', i, ' label:', labels[i],  ' material_labels:', material_labels[i])
-            x1,y1,x2,y2 = [round(x) for x in boxes[i]]  # = map(int, boxes[i])
+            x1, y1, x2, y2 = [round(x) for x in boxes[i]]  # = map(int, boxes[i])
             print('x1,y1,x2,y2:', x1, y1, x2, y2)
         
         print('boxes:', boxes)
@@ -81,3 +146,12 @@ if __name__ == '__main__':
         print(masks.shape)
         print(top_predictions.area())
         print(top_predictions.fields())
+
+    json_dict['images'] = images
+    json_dict['annotations'] = annotations
+    json_dict['categories'] = categories
+    json_dict['materials'] = materials
+
+    # with open(os.path.join(save_dir, save_name), 'w', encoding='utf-8') as f:
+    with open('ttttt.json', 'w', encoding='utf-8') as f:
+        json.dump(json_dict, f, ensure_ascii=False)
