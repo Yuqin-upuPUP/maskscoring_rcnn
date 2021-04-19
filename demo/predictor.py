@@ -1,5 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 import numpy as np
+import random
+from copy import deepcopy
 import cv2
 import torch
 from torchvision import transforms as T
@@ -330,7 +332,7 @@ class COCODemo(object):
             box = box.to(torch.int64)
             top_left, bottom_right = box[:2].tolist(), box[2:].tolist()
             image = cv2.rectangle(
-                image, tuple(top_left), tuple(bottom_right), tuple(color), 1
+                image, tuple(top_left), tuple(bottom_right), tuple([0, 0, 255]), 1
             )
 
         return image
@@ -347,16 +349,43 @@ class COCODemo(object):
         masks = predictions.get_field("mask").numpy()
         labels = predictions.get_field("labels")
 
-        colors = self.compute_colors_for_labels(labels).tolist()
+        # colors = self.compute_colors_for_labels(labels).tolist()
 
-        for mask, color in zip(masks, colors):
+        # for mask, color in zip(masks, colors):
+        #     thresh = mask[0, :, :, None].astype(np.uint8)
+        #     contours, hierarchy = cv2_util.findContours(
+        #         thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        #     )
+        #     image = cv2.drawContours(image, contours, -1, color, 3)
+        
+        image_copy = deepcopy(image)
+        for mask in masks:
             thresh = mask[0, :, :, None].astype(np.uint8)
             contours, hierarchy = cv2_util.findContours(
                 thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            image = cv2.drawContours(image, contours, -1, color, 3)
+        #     image = cv2.drawContours(image, contours, -1, color, 3)
+            color = [random.randint(0, 255) for i in range(3)]
+            cv2.fillPoly(image, contours, color)
 
-        composite = image
+        # for mask in masks:
+        #     thresh = mask[0, :, :, None].astype(np.uint8)
+        #     contours, hierarchy = cv2_util.findContours(
+        #        thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        #     )
+
+        #     for contour in contours:
+        #         color = [random.randint(0, 255) for i in range(3)]
+        #         print(color)
+        #         # color = [255, 0, 0]
+        #         cv2.fillPoly(image, [contour], color)
+
+        alpha = 0.7
+        beta = 1 - alpha
+        gamma = 0
+        image_transparent = cv2.addWeighted(image, alpha, image_copy, beta, gamma)
+
+        composite = image_transparent
 
         return composite
 
