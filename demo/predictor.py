@@ -14,6 +14,16 @@ from maskrcnn_benchmark import layers as L
 from maskrcnn_benchmark.utils import cv2_util
 
 
+def apply_mask(image, mask, color, alpha=0.5):
+    """
+    Apply the given mask to the image.
+    """
+    for c in range(3):
+        image[:, :, c] = np.where(mask == 1,
+                                image[:, :, c] * (1 - alpha) + alpha * color[c],
+                                image[:, :, c])
+    return image
+
 class Resize(object):
     def __init__(self, min_size, max_size):
         self.min_size = min_size
@@ -337,6 +347,33 @@ class COCODemo(object):
 
         return image
 
+
+    def overlay_mask_custom_0(self, image, predictions):
+        """
+        Adds the instances contours for each predicted object.
+        Each label has a different color.
+        Arguments:
+            image (np.ndarray): an image as returned by OpenCV
+            predictions (BoxList): the result of the computation by the model.
+                It should contain the field `mask` and `labels`.
+        """
+        masks = predictions.get_field("mask").numpy()
+        labels = predictions.get_field("labels")
+
+        for mask in masks:
+            thresh = mask[0, :, :, None].astype(np.uint8)
+            contours, hierarchy = cv2_util.findContours(
+                thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
+            # image = cv2.drawContours(image, contours, -1, color, 3)
+            color = [random.randint(128, 255) for i in range(3)]
+            image = apply_mask(image, mask, color)
+
+        composite = image
+
+        return composite
+
+
     def overlay_mask(self, image, predictions):
         """
         Adds the instances contours for each predicted object.
@@ -367,18 +404,6 @@ class COCODemo(object):
         #     image = cv2.drawContours(image, contours, -1, color, 3)
             color = [random.randint(0, 255) for i in range(3)]
             cv2.fillPoly(image, contours, color)
-
-        # for mask in masks:
-        #     thresh = mask[0, :, :, None].astype(np.uint8)
-        #     contours, hierarchy = cv2_util.findContours(
-        #        thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-        #     )
-
-        #     for contour in contours:
-        #         color = [random.randint(0, 255) for i in range(3)]
-        #         print(color)
-        #         # color = [255, 0, 0]
-        #         cv2.fillPoly(image, [contour], color)
 
         alpha = 0.7
         beta = 1 - alpha
