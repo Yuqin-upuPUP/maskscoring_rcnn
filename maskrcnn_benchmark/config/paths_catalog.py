@@ -39,6 +39,10 @@ class DatasetCatalog(object):
             "midea/val",
             "midea/annotations/val_data.json",
         ),
+        "coco_midea_test": (
+            "midea/test",
+            "midea/annotations/test_data.json",
+        ),
         # 20201209 添加python搜索路径------------------------------------------------------------------------------------
     }
 

@@ -106,7 +106,7 @@ def test(cfg, model, distributed):
         iou_types = iou_types + ("segm",)
     output_folders = [None] * len(cfg.DATASETS.TEST)
     if cfg.OUTPUT_DIR:
-        dataset_names = cfg.DATASETS.TEST
+        dataset_names = cfg.DATASETS.TEST  # 评估集
         for idx, dataset_name in enumerate(dataset_names):
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
             mkdir(output_folder)
