@@ -23,8 +23,8 @@ config_file = "configs/e2e_ms_rcnn_R_50_FPN_1x.yaml"
 # 2.配置
 cfg.merge_from_file(config_file)  # merge配置文件
 cfg.merge_from_list(["MODEL.MASK_ON", True])  # 打开mask开关  # .yaml
-# cfg.merge_from_list(["MODEL.DEVICE", "cuda"])  # or设置为CPU ["MODEL.DEVICE", "cpu"]
-cfg.merge_from_list(["MODEL.DEVICE", "cpu"])  # defaults.py
+cfg.merge_from_list(["MODEL.DEVICE", "cuda"])  # or设置为CPU ["MODEL.DEVICE", "cpu"]
+# cfg.merge_from_list(["MODEL.DEVICE", "cpu"])  # defaults.py
 
 def mask_to_seg(mask):
     mask = mask[0]
@@ -64,6 +64,9 @@ materials = [
 ]
 
 if __name__ == '__main__':
+    
+    cfg.merge_from_list(['TEST.IMS_PER_BATCH', 1])
+    print('cfg.TEST.IMS_PER_BATCH:', cfg.TEST.IMS_PER_BATCH)
 
     parser = argparse.ArgumentParser(description='My predition')
     args = parser.parse_args()
@@ -81,9 +84,9 @@ if __name__ == '__main__':
 
     cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
 
-    for weight in sorted(os.listdir(weights_folder), key=lambda x: int(x[:-4])):
+    for weight in sorted(os.listdir(weights_folder), key=lambda x: int(x[6:-4])):
 
-        weight_name = os.path.split('.')[0]
+        weight_name = os.path.splitext(weight)[0]
         weight_path = os.path.join(weights_folder, weight)
         cfg.merge_from_list(['MODEL.WEIGHT', weight_path])
 
