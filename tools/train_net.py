@@ -113,7 +113,23 @@ def test(cfg, model, distributed):
             output_folders[idx] = output_folder
     data_loaders_val = make_data_loader(cfg, is_train=False, is_distributed=distributed)
     for output_folder, data_loader_val in zip(output_folders, data_loaders_val):
-        inference(
+        # 20210421 原始未修改代码--------------------------------------------------------
+        # inference(
+        #     model,
+        #     data_loader_val,
+        #     iou_types=iou_types,
+        #     box_only=cfg.MODEL.RPN_ONLY,
+        #     device=cfg.MODEL.DEVICE,
+        #     expected_results=cfg.TEST.EXPECTED_RESULTS,
+        #     expected_results_sigma_tol=cfg.TEST.EXPECTED_RESULTS_SIGMA_TOL,
+        #     output_folder=output_folder,
+        #     maskiou_on=cfg.MODEL.MASKIOU_ON
+        # )
+        #
+        # synchronize()
+
+        # 20210421 修改代码-------------------------------------------------------------
+        results, coco_results, predictions = inference(
             model,
             data_loader_val,
             iou_types=iou_types,
@@ -124,7 +140,10 @@ def test(cfg, model, distributed):
             output_folder=output_folder,
             maskiou_on=cfg.MODEL.MASKIOU_ON
         )
+
         synchronize()
+
+        return results.results
 
 
 def main():

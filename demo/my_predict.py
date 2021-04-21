@@ -5,6 +5,7 @@ import argparse
 
 import os
 import numpy as np
+import pandas as pd
 import json
 from skimage.measure import find_contours
 from datetime import datetime
@@ -84,6 +85,11 @@ if __name__ == '__main__':
 
     cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
 
+    eval_indicators = ['bbox_AP', 'bbox_AP50', 'bbox_AP75', 'bbox_APs', 'bbox_APm', 'bbox_APl', 'bbox_material_AP', 'bbox_material_AP50', 'bbox_material_AP75', 'bbox_material_APs', 'bbox_material_APm', 'bbox_material_APl',
+                       'segm_AP', 'segm_AP50', 'segm_AP75', 'segm_APs', 'segm_APm', 'segm_APl', 'segm_material_AP', 'segm_material_AP50', 'segm_material_AP75', 'segm_material_APs', 'segm_material_APm', 'segm_material_APl']
+
+    results_pd = pd.DataFrame(columns=eval_indicators)
+
     for weight in sorted(os.listdir(weights_folder), key=lambda x: int(x[6:-4])):
 
         weight_name = os.path.splitext(weight)[0]
@@ -108,7 +114,15 @@ if __name__ == '__main__':
         # 借鉴训练时对验证集的做法，使用该权重对测试集进行coco评估
 
         print('使用权重[%s]进行评估' % weight_name)
-        test(cfg, coco_demo.model, args.distributed)  # 会对  cfg.DATASETS.TEST  指定的数据集进行评估
+        eval_results = test(cfg, coco_demo.model, args.distributed)  # 会对  cfg.DATASETS.TEST  指定的数据集进行评估
+        print('-'*50, '从test出来的结果')
+        eval_value = list(eval_results['bbox'].values()) + list(eval_results['segm'].values())
+        print(eval_value)
+        eval_value_series = pd.Series(eval_value, index=eval_indicators, name=weight_name)
+        print(eval_value_series)
+        results_pd = results_pd.append(eval_value_series)
+        print(results_pd)
+        print('-' * 50, '从test出来的结果')
 
         # ------------------------------------------------------------------------------
         # ------------------------------------------------------------------------------
@@ -198,3 +212,6 @@ if __name__ == '__main__':
         # with open(os.path.join(save_dir, save_name), 'w', encoding='utf-8') as f:
         with open(os.path.join(out_folder, 'data_midea.json'), 'w', encoding='utf-8') as f:
             json.dump(json_dict, f)
+
+    with pd.ExcelWriter("ttt.xlsx") as writer:
+        results_pd.to_excel(writer, sheet_name='msrcnn')
