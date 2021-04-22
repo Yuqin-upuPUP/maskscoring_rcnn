@@ -35,9 +35,8 @@ weights_folder = 'proposal_weights'  # 待评估预测的模型权重文件夹
 in_folder = 'datasets/midea/test/'  # 测试集
 
 tune_root = 'tune'  # 存放所有调参结果的文件目录
-tune_folder = 'tune' + timestamp  # 存放本次调参结果的文件目录，带有本次调参实验的时间戳
-#
-# cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
+
+cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
 
 eval_indicators = ['bbox_AP', 'bbox_AP50', 'bbox_AP75', 'bbox_APs', 'bbox_APm', 'bbox_APl', 'bbox_material_AP',
                    'bbox_material_AP50', 'bbox_material_AP75', 'bbox_material_APs', 'bbox_material_APm',
@@ -93,6 +92,10 @@ def my_evaluate(distributed, visualize=False, save_json=False):
 
     如果 visualize 和 save_json 都为 False，则只进行coco评价指标的评估
     """
+
+    tune_folder = 'tune-' + timestamp + ('-visualize' if visualize else '') + ('-json' if save_json else '')  # 存放本次调参结果的文件目录，带有本次调参实验的时间戳
+    print('-' * 190, '本次调参测试评估实验的结果将存放在：', tune_folder, '-' * 190, sep='\n')
+
     results_pd = pd.DataFrame(columns=eval_indicators)
 
     for weight in sorted(os.listdir(weights_folder), key=lambda x: int(x[6:-4])):
@@ -118,17 +121,15 @@ def my_evaluate(distributed, visualize=False, save_json=False):
         # ------------------------------------------------------------------------------
         # 借鉴训练时对验证集的做法，使用该权重对测试集进行coco评估
 
-        print('-' * 100)
-        print('使用权重[%s]进行评估' % weight_name)
         eval_results = test(cfg, coco_demo.model, distributed)  # 会对  cfg.DATASETS.TEST  指定的数据集进行评估
-        print('-' * 50, '评估结果')
+        print('-' * 100, '评估结果')
         eval_value = list(eval_results['bbox'].values()) + list(eval_results['segm'].values())
         # print(eval_value)
         eval_value_series = pd.Series(eval_value, index=eval_indicators, name=weight_name)
         # print(eval_value_series)
         results_pd = results_pd.append(eval_value_series)
         print(results_pd)
-        print('-' * 50, '评估结果')
+        print('-' * 100, '评估结果')
 
         # ------------------------------------------------------------------------------
         # ------------------------------------------------------------------------------
@@ -142,7 +143,7 @@ def my_evaluate(distributed, visualize=False, save_json=False):
 
             annotation_id = 0
 
-            print('-' * 50, 'predict预测')
+            print('-' * 100, 'predict预测')
             for file_name in tqdm(sorted(os.listdir(in_folder), key=lambda x: int(x[:-4]))):
                 if not file_name.endswith(('jpg', 'png', 'bmp')):
                     continue
@@ -193,9 +194,9 @@ def my_evaluate(distributed, visualize=False, save_json=False):
                     annotation['objectId'] = i + 1  # 每张图片独立计数
                     annotation['image_id'] = image_dict['id']
                     annotation['category_id'] = int(labels[i])
-                    annotation['score'] = scores[i]
+                    annotation['score'] = float(scores[i])
                     annotation['material_id'] = int(material_labels[i])
-                    annotation['material_scores'] = material_scores[i]
+                    annotation['material_scores'] = float(material_scores[i])
                     annotation['segmentation'] = mask_to_seg(masks[i])
                     annotation['bbox'] = [round(x) for x in boxes[i]]
                     annotation['bbox'][2] = annotation['bbox'][2] - annotation['bbox'][0]
@@ -220,10 +221,11 @@ def my_evaluate(distributed, visualize=False, save_json=False):
                 # with open(os.path.join(save_dir, save_name), 'w', encoding='utf-8') as f:
                 with open(os.path.join(out_folder, 'data_midea.json'), 'w', encoding='utf-8') as f:
                     json.dump(json_dict, f)
-                print('-' * 50, 'predict预测')
+                print('-' * 100, 'predict预测')
 
     sheet_name = 'msrcnn' if cfg.MODEL.MASKIOU_ON else 'mrcnn'
-    with pd.ExcelWriter("%s.xlsx" % timestamp) as writer:
+    excel_path = os.path.join(tune_root, tune_folder, '%s.xlsx' % timestamp)
+    with pd.ExcelWriter(excel_path) as writer:
         results_pd.to_excel(writer, sheet_name=sheet_name)
 
 
@@ -236,15 +238,23 @@ if __name__ == '__main__':
     print('cfg.MODEL.MASKIOU_ON:', cfg.MODEL.MASKIOU_ON)
 
     parser = argparse.ArgumentParser(description='My predition')
+    parser.add_argument(
+        '--visualize',
+        default=False,
+        type=bool
+    )  # 是否进行可视化图片并保存
+    parser.add_argument(
+        '--save-json',
+        default=False,
+        type=bool
+    )  # 是否保存预测结果json
+
     args = parser.parse_args()
 
     num_gpus = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
     args.distributed = num_gpus > 1
 
-    my_evaluate(args.distributed)  # coco评估
-    # my_evaluate(args.distributed, visualize=True)  # coco评估 + 可视化图片保存
-    # my_evaluate(args.distributed, save_json=True)  # coco评估 + json保存
-    # my_evaluate(args.distributed, visualize=True, save_json=True)  # coco评估 + 可视化图片保存 + json保存
+    my_evaluate(args.distributed, visualize=args.visualize, save_json=args.save_json)
 
     end = time.time()
     time_consuming = end - start
