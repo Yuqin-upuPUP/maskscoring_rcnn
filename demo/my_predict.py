@@ -28,7 +28,7 @@ cfg.merge_from_file(config_file)  # merge配置文件
 cfg.merge_from_list(["MODEL.MASK_ON", True])  # 打开mask开关  # .yaml
 cfg.merge_from_list(["MODEL.DEVICE", "cuda"])  # or设置为CPU ["MODEL.DEVICE", "cpu"]
 # cfg.merge_from_list(["MODEL.DEVICE", "cpu"])  # defaults.py
-#
+
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 weights_folder = 'proposal_weights'  # 待评估预测的模型权重文件夹
@@ -235,6 +235,7 @@ if __name__ == '__main__':
     cfg.merge_from_list(['TEST.IMS_PER_BATCH', 1])
     # cfg.merge_from_list(['MODEL.MASKIOU_ON', False])
     print('cfg.TEST.IMS_PER_BATCH:', cfg.TEST.IMS_PER_BATCH)
+    print('cfg.MODEL.MASK_ON:', cfg.MODEL.MASK_ON)
     print('cfg.MODEL.MASKIOU_ON:', cfg.MODEL.MASKIOU_ON)
 
     parser = argparse.ArgumentParser(description='My predition')
