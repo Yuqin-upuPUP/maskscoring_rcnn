@@ -30,8 +30,10 @@ MODEL:
     SHARE_BOX_FEATURE_EXTRACTOR: False
   MASK_ON: True
 DATASETS:
-  TRAIN: ("coco_2014_train", "coco_2014_valminusminival")  
-  TEST: ("coco_2014_minival",)
+  # TRAIN: ("coco_2014_train", "coco_2014_valminusminival")  
+  # TEST: ("coco_2014_minival",)
+  TRAIN: ("coco_midea_train", )
+  TEST: ("coco_midea_val",)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
 SOLVER:
