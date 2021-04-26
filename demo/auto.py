@@ -114,7 +114,9 @@ def main():
     cfg.freeze()
 
     output_dir = cfg.OUTPUT_DIR
-    if output_dir:
+    if not os.path.exists('models'):
+        os.mkdir('models')
+    if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
     logger = setup_logger("maskrcnn_benchmark", output_dir, get_rank())
