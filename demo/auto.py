@@ -38,28 +38,19 @@ OPTS_DICT = {
     'TEST.IMS_PER_BATCH': '1',  # 只能为1
 }
 
-OPTS_DICT.update({
-    'name_str_with_parameters': '%s_BS_%s_LR_%s_MI_%d_%d_%s' %
-                  (
-                      timestamp,
-                      OPTS_DICT['SOLVER.IMS_PER_BATCH'],
-                      OPTS_DICT['SOLVER.BASE_LR'],
-                      OPTS_DICT['SOLVER.STEPS'][0],
-                      OPTS_DICT['SOLVER.STEPS'][1],
-                      OPTS_DICT['SOLVER.MAX_ITER'],
-                  )
-})  # 训练后存放的权重文件
+# 训练后存放的权重文件
+NAME_STR_WITH_PARAMETERS = '%s_BS_%s_LR_%s_MI_%d_%d_%s' % \
+                           (
+                                timestamp,
+                                OPTS_DICT['SOLVER.IMS_PER_BATCH'],
+                                OPTS_DICT['SOLVER.BASE_LR'],
+                                OPTS_DICT['SOLVER.STEPS'][0],
+                                OPTS_DICT['SOLVER.STEPS'][1],
+                                OPTS_DICT['SOLVER.MAX_ITER'],
+                            )
 
 OPTS_DICT.update({
-    'OUTPUT_DIR': 'models/%s_BS_%s_LR_%s_MI_%d_%d_%s' %
-                  (
-                      timestamp,
-                      OPTS_DICT['SOLVER.IMS_PER_BATCH'],
-                      OPTS_DICT['SOLVER.BASE_LR'],
-                      OPTS_DICT['SOLVER.STEPS'][0],
-                      OPTS_DICT['SOLVER.STEPS'][1],
-                      OPTS_DICT['SOLVER.MAX_ITER'],
-                  )
+    'OUTPUT_DIR': 'models/%s' % NAME_STR_WITH_PARAMETERS
 })  # 训练后存放的权重文件
 
 OPTS_DICT.update({
@@ -97,11 +88,11 @@ IN_FOLDER = 'datasets/midea/test/'
 
 
 TUNE_ROOT = 'tune'  # 整个项目评估测试集的结果存放路径
-TUNE_FOLDER = os.path.join(TUNE_ROOT, OPTS_DICT['name_str_with_parameters'])  # 本次模型参数配置条件下评估测试集的结果存放路径
+TUNE_FOLDER = os.path.join(TUNE_ROOT, NAME_STR_WITH_PARAMETERS)  # 本次模型参数配置条件下评估测试集的结果存放路径
 
 EVAL_WEIGHTS_ROOT = 'eval_weights'
-EVAL_WEIGHTS_PATH = os.path.join(EVAL_WEIGHTS_ROOT, OPTS_DICT['name_str_with_parameters'])  # 准备用来评估的权重文件夹路径，需要先复制保存到这里，再进行评估
-EXCEL_PATH = os.path.join(TUNE_FOLDER, '%s.xlsx' % OPTS_DICT['name_str_with_parameters'])  # 测试集评估结果保存excel文件路径
+EVAL_WEIGHTS_PATH = os.path.join(EVAL_WEIGHTS_ROOT, NAME_STR_WITH_PARAMETERS)  # 准备用来评估的权重文件夹路径，需要先复制保存到这里，再进行评估
+EXCEL_PATH = os.path.join(TUNE_FOLDER, '%s.xlsx' % NAME_STR_WITH_PARAMETERS)  # 测试集评估结果保存excel文件路径
 SHEET_NAME = 'msrcnn' if MSRCNN else 'mrcnn'  # 保存到excel中的sheet的名字
 
 # 配置------------------------------------------------------------------------------------------------------------------
