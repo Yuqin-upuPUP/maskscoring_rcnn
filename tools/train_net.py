@@ -38,7 +38,7 @@ from maskrcnn_benchmark.utils.miscellaneous import mkdir
 
 
 # def train(cfg, local_rank, distributed):
-def train(cfg, local_rank, distributed, use_tensorboard=False):
+def train(cfg, local_rank, distributed, use_tensorboard=False, name_str_with_parameters=''):
     model = build_detection_model(cfg)
     device = torch.device(cfg.MODEL.DEVICE)
     model.to(device)
@@ -78,7 +78,8 @@ def train(cfg, local_rank, distributed, use_tensorboard=False):
         meters = TensorboardLogger(
             log_dir=cfg.TENSORBOARD_EXPERIMENT,
             start_iter=arguments['iteration'],
-            delimiter="  ")
+            delimiter="  ",
+            name_str_with_parameters=name_str_with_parameters)
     else:
         meters = MetricLogger(delimiter="  ")
 

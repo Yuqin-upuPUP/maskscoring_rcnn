@@ -71,14 +71,15 @@ class TensorboardLogger(MetricLogger):
     def __init__(self,
                  log_dir,
                  start_iter=0,
-                 delimiter='\t'):
+                 delimiter='\t',
+                 name_str_with_parameters=''):
 
         super(TensorboardLogger, self).__init__(delimiter)
         self.iteration = start_iter
-        self.writer = self._get_tensorboard_writer(log_dir)
+        self.writer = self._get_tensorboard_writer(log_dir, name_str_with_parameters)
 
     @staticmethod
-    def _get_tensorboard_writer(log_dir):
+    def _get_tensorboard_writer(log_dir, name_str_with_parameters):
         try:
             from tensorboardX import SummaryWriter
         except ImportError:
@@ -88,8 +89,11 @@ class TensorboardLogger(MetricLogger):
             )
 
         if is_main_process():
-            timestamp = datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
-            tb_logger = SummaryWriter('{}-{}'.format(log_dir, timestamp))
+            if name_str_with_parameters:
+                tb_logger = SummaryWriter('{}-{}'.format(log_dir, name_str_with_parameters))
+            else:
+                timestamp = datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
+                tb_logger = SummaryWriter('{}-{}'.format(log_dir, timestamp))
             return tb_logger
         else:
             return None

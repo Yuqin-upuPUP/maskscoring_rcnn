@@ -138,7 +138,8 @@ def main():
         cfg=cfg,
         local_rank=LOCAL_RANK,
         distributed=distributed,
-        use_tensorboard=USE_TENSORBOARD
+        use_tensorboard=USE_TENSORBOARD,
+        name_str_with_parameters=NAME_STR_WITH_PARAMETERS
     )
 
     # 评估验证集阶段------------------------------------------------------------------------------------------------------
