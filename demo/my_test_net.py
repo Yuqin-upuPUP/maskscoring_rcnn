@@ -59,11 +59,12 @@ def mask_to_seg(mask):
 
 
 # 选定部分权重文件后，依次对这些权重文件进行预测评估
-def my_evaluate(distributed, in_folder, eval_weights_path, tune_folder, excel_path, sheet_name, visualize=False, save_json=False):
+def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight, tune_folder, excel_path, sheet_name, visualize=False, save_json=False):
     """
     distributed: 多gpu
     in_folder: 'datasets/midea/test/' 测试集
-    eval_weights_path: 准备用来评估的权重文件夹路径,
+    weights_output_dir: 训练过程中保存的权重文件夹路径,
+    proposal_eval_weight: 候选的权重文件名称
     tune_folder: 本次模型参数配置条件下评估测试集的结果存放路径,
     excel_path: 本次模型参数配置条件下评估测试集的结果记录excel路径
     sheet_name: excel里sheet的名称
@@ -77,10 +78,13 @@ def my_evaluate(distributed, in_folder, eval_weights_path, tune_folder, excel_pa
 
     results_pd = pd.DataFrame(columns=EVAL_INDICATORS)
 
-    for weight in sorted(os.listdir(eval_weights_path), key=lambda x: int(x[6:-4])):
+    for weight in sorted(os.listdir(weights_output_dir), key=lambda x: int(x[6:-4])):
+
+        if not (weight in proposal_eval_weight):
+            continue
 
         weight_name = os.path.splitext(weight)[0]
-        weight_path = os.path.join(eval_weights_path, weight)
+        weight_path = os.path.join(weights_output_dir, weight)
         cfg.merge_from_list(['MODEL.WEIGHT', weight_path])  # 设置要评估的权重文件
 
         print('-' * 95, '正在进行评估的权重文件', cfg.MODEL.WEIGHT, '-' * 95, sep='\n')

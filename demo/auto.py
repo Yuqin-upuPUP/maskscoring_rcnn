@@ -81,6 +81,8 @@ PROPOSAL_EVAL_WEIGHT_NAMES = [
     '0125000'
 ]
 
+PROPOSAL_EVAL_WEIGHT = list(map(lambda name: 'model_%s.pth' % name, PROPOSAL_EVAL_WEIGHT_NAMES))
+
 TEST_VISUALIZE = False  # 预测时是否进行可视化并保存为图片
 TEST_SAVE_JSON = False  # 是否将预测得到的annotation保存为json
 
@@ -90,8 +92,8 @@ IN_FOLDER = 'datasets/midea/test/'
 TUNE_ROOT = 'tune'  # 整个项目评估测试集的结果存放路径
 TUNE_FOLDER = os.path.join(TUNE_ROOT, NAME_STR_WITH_PARAMETERS)  # 本次模型参数配置条件下评估测试集的结果存放路径
 
-EVAL_WEIGHTS_ROOT = 'eval_weights'
-EVAL_WEIGHTS_PATH = os.path.join(EVAL_WEIGHTS_ROOT, NAME_STR_WITH_PARAMETERS)  # 准备用来评估的权重文件夹路径，需要先复制保存到这里，再进行评估
+# EVAL_WEIGHTS_ROOT = 'eval_weights'
+# EVAL_WEIGHTS_PATH = os.path.join(EVAL_WEIGHTS_ROOT, NAME_STR_WITH_PARAMETERS)  # 准备用来评估的权重文件夹路径，需要先复制保存到这里，再进行评估
 EXCEL_PATH = os.path.join(TUNE_FOLDER, '%s.xlsx' % NAME_STR_WITH_PARAMETERS)  # 测试集评估结果保存excel文件路径
 SHEET_NAME = 'msrcnn' if MSRCNN else 'mrcnn'  # 保存到excel中的sheet的名字
 
@@ -128,8 +130,8 @@ def main():
     logger.info("Loaded configuration file {}".format(CONFIG_FILE))
     with open(CONFIG_FILE, "r") as cf:
         config_str = "\n" + cf.read()
-        logger.info(config_str)
-    logger.info("Running with config:\n{}".format(cfg))
+        # logger.info(config_str)
+    # logger.info("Running with config:\n{}".format(cfg))
 
     # 训练阶段-----------------------------------------------------------------------------------------------------------
     # model = train(cfg, args.local_rank, distributed)
@@ -149,22 +151,26 @@ def main():
         test(cfg, model, distributed)
 
     # 评估测试集阶段------------------------------------------------------------------------------------------------------
-    print('-' * 190, '***** 转移待评估权重文件 *****', '-' * 190, sep='\n')
-    if not os.path.exists(EVAL_WEIGHTS_PATH):
-        os.makedirs(EVAL_WEIGHTS_PATH)
-    for weight_name in PROPOSAL_EVAL_WEIGHT_NAMES:
-        weight_path = 'model_%s.pth' % weight_name  # model_0125000.pth
-        origin_weight_path = os.path.join(OPTS_DICT['OUTPUT_DIR'], weight_path)
-        cp_command = 'cp %s %s' % (origin_weight_path, EVAL_WEIGHTS_PATH)
-        os.system(cp_command)
-
+    cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
+    # print('-' * 190, '***** 转移待评估权重文件 *****', '-' * 190, sep='\n')
+    # if not os.path.exists(EVAL_WEIGHTS_PATH):
+    #     os.makedirs(EVAL_WEIGHTS_PATH)
+    # for weight_name in PROPOSAL_EVAL_WEIGHT_NAMES:
+    #     weight_path = 'model_%s.pth' % weight_name  # model_0125000.pth
+    #     origin_weight_path = os.path.join(OPTS_DICT['OUTPUT_DIR'], weight_path)
+    #     cp_command = 'cp %s %s' % (origin_weight_path, EVAL_WEIGHTS_PATH)
+    #     os.system(cp_command)
+    #
     # 输出待评估的权重
-    print('\n'.join(os.listdir(EVAL_WEIGHTS_PATH)))
+    # print('\n'.join(os.listdir(EVAL_WEIGHTS_PATH)))
+    print('-' * 190, '***** 待评估权重 *****', '-' * 190, sep='\n')
+    print('\n'.join(os.listdir(PROPOSAL_EVAL_WEIGHT)))
 
     print('-' * 190, '***** 评估测试集 *****', '-' * 190, sep='\n')
     my_evaluate(distributed,
                 IN_FOLDER,
-                EVAL_WEIGHTS_PATH,
+                OPTS_DICT['OUTPUT_DIR'],
+                PROPOSAL_EVAL_WEIGHT,
                 TUNE_FOLDER,
                 EXCEL_PATH,
                 SHEET_NAME,
