@@ -78,7 +78,7 @@ def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight
 
     results_pd = pd.DataFrame(columns=EVAL_INDICATORS)
 
-    for weight in sorted(os.listdir(weights_output_dir), key=lambda x: int(x[6:-4])):
+    for weight in sorted(filter(lambda filename: filename.endswith('.pth'), os.listdir(weights_output_dir)), key=lambda x: int(x[6:-4])):
 
         if not (weight in proposal_eval_weight):
             continue
@@ -93,6 +93,7 @@ def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight
             cfg,
             min_image_size=800,
             confidence_threshold=0.5,  # 设置置信度
+            my_test=True
         )
 
         out_folder = os.path.join(tune_folder, weight_name)  # 预测得到的可视化结果存储路径

@@ -16,7 +16,7 @@ from my_test_net import my_evaluate
 
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-MSRCNN = True
+MSRCNN = False
 
 # 训练配置---------------------------------------------------------------------------------------------------------------
 MRCNN_CONFIG_FILE = 'configs/e2e_mask_rcnn_R_50_FPN_1x.yaml'  # mrcnn配置文件
@@ -31,10 +31,10 @@ USE_TENSORBOARD = True
 
 OPTS_DICT = {
     'SOLVER.IMS_PER_BATCH': '2',
-    'SOLVER.BASE_LR': '0.0025',
+    'SOLVER.BASE_LR': '0.01',
     'SOLVER.MAX_ITER': '600',
     'SOLVER.STEPS': (400, 500),
-    'SOLVER.CHECKPOINT_PERIOD': '10',
+    'SOLVER.CHECKPOINT_PERIOD': '50',
     'TEST.IMS_PER_BATCH': '1',  # 只能为1
 }
 
@@ -48,6 +48,8 @@ NAME_STR_WITH_PARAMETERS = '%s_BS_%s_LR_%s_MI_%d_%d_%s' % \
                                 OPTS_DICT['SOLVER.STEPS'][1],
                                 OPTS_DICT['SOLVER.MAX_ITER'],
                             )
+
+NAME_STR_WITH_PARAMETERS = ('MSRCNN_' if MSRCNN else 'MRCNN_') + NAME_STR_WITH_PARAMETERS
 
 OPTS_DICT.update({
     'OUTPUT_DIR': 'models/%s' % NAME_STR_WITH_PARAMETERS
@@ -75,16 +77,20 @@ for k, v in OPTS_DICT.items():
 # 测试配置---------------------------------------------------------------------------------------------------------------
 # 打算评估的权重列表  权重名: model_0125000.pth  这里只提供数字即可
 PROPOSAL_EVAL_WEIGHT_NAMES = [
-    '0050000',
-    '0075000',
-    '0100000',
-    '0125000'
+    # '0050000',
+    # '0075000',
+    # '0100000',
+    # '0125000'
+    '0000450',
+    '0000500',
+    '0000550'
 ]
 
 PROPOSAL_EVAL_WEIGHT = list(map(lambda name: 'model_%s.pth' % name, PROPOSAL_EVAL_WEIGHT_NAMES))
 
 TEST_VISUALIZE = False  # 预测时是否进行可视化并保存为图片
 TEST_SAVE_JSON = False  # 是否将预测得到的annotation保存为json
+TEST_DATASETS = ("coco_midea_test",)  # 测试阶段评估时的测试集
 
 IN_FOLDER = 'datasets/midea/test/'
 
@@ -151,7 +157,7 @@ def main():
         test(cfg, model, distributed)
 
     # 评估测试集阶段------------------------------------------------------------------------------------------------------
-    cfg.merge_from_list(['DATASETS.TEST', ("coco_midea_test",)])  # 指定评估的数据集为测试集
+    cfg.merge_from_list(['DATASETS.TEST', TEST_DATASETS])  # 指定评估的数据集为测试集
     # print('-' * 190, '***** 转移待评估权重文件 *****', '-' * 190, sep='\n')
     # if not os.path.exists(EVAL_WEIGHTS_PATH):
     #     os.makedirs(EVAL_WEIGHTS_PATH)
@@ -164,7 +170,7 @@ def main():
     # 输出待评估的权重
     # print('\n'.join(os.listdir(EVAL_WEIGHTS_PATH)))
     print('-' * 190, '***** 待评估权重 *****', '-' * 190, sep='\n')
-    print('\n'.join(os.listdir(PROPOSAL_EVAL_WEIGHT)))
+    print('\n'.join(PROPOSAL_EVAL_WEIGHT))
 
     print('-' * 190, '***** 评估测试集 *****', '-' * 190, sep='\n')
     my_evaluate(distributed,
