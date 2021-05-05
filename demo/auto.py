@@ -75,18 +75,14 @@ for k, v in OPTS_DICT.items():
     opts.append(v)
 
 # 测试配置---------------------------------------------------------------------------------------------------------------
-# 打算评估的权重列表  权重名: model_0125000.pth  这里只提供数字即可
-PROPOSAL_EVAL_WEIGHT_NAMES = [
-    # '0050000',
-    # '0075000',
-    # '0100000',
-    # '0125000'
-    '0000450',
-    '0000500',
-    '0000550'
-]
+# 打算评估的权重列表  权重名: 'model_0125000.pth'  这里只提供数字部分即可
+solver_max_iter = int(OPTS_DICT['SOLVER.MAX_ITER'])  # 总的iter数
+solver_checkpoint_period = int(OPTS_DICT['SOLVER.CHECKPOINT_PERIOD'])  # 保存权重的周期
+proposal_eval_weight_num = solver_max_iter / solver_checkpoint_period  # 保存的权重文件的数量
 
-PROPOSAL_EVAL_WEIGHT = list(map(lambda name: 'model_%s.pth' % name, PROPOSAL_EVAL_WEIGHT_NAMES))
+PROPOSAL_EVAL_WEIGHT_NAMES = [str((num+1)*solver_checkpoint_period).rjust(7, '0') for num in range(proposal_eval_weight_num)]  # 构造权重文件名称的数字部分，如： '0125000'
+
+PROPOSAL_EVAL_WEIGHT = list(map(lambda name: 'model_%s.pth' % name, PROPOSAL_EVAL_WEIGHT_NAMES))  # 拼接成完整的权重文件名称，如: 'model_0125000.pth'
 
 TEST_VISUALIZE = False  # 预测时是否进行可视化并保存为图片
 TEST_SAVE_JSON = False  # 是否将预测得到的annotation保存为json
