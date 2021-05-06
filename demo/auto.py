@@ -16,7 +16,7 @@ from my_test_net import my_evaluate
 
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-MSRCNN = False
+MSRCNN = True
 
 # 训练配置---------------------------------------------------------------------------------------------------------------
 MRCNN_CONFIG_FILE = 'configs/e2e_mask_rcnn_R_50_FPN_1x.yaml'  # mrcnn配置文件
@@ -32,9 +32,9 @@ USE_TENSORBOARD = True
 OPTS_DICT = {
     'SOLVER.IMS_PER_BATCH': '2',
     'SOLVER.BASE_LR': '0.01',
-    'SOLVER.MAX_ITER': '600',
-    'SOLVER.STEPS': (400, 500),
-    'SOLVER.CHECKPOINT_PERIOD': '50',
+    'SOLVER.MAX_ITER': '120000',
+    'SOLVER.STEPS': (80000, 100000),
+    'SOLVER.CHECKPOINT_PERIOD': '1000',
     'TEST.IMS_PER_BATCH': '1',  # 只能为1
 }
 
@@ -78,7 +78,7 @@ for k, v in OPTS_DICT.items():
 # 打算评估的权重列表  权重名: 'model_0125000.pth'  这里只提供数字部分即可
 solver_max_iter = int(OPTS_DICT['SOLVER.MAX_ITER'])  # 总的iter数
 solver_checkpoint_period = int(OPTS_DICT['SOLVER.CHECKPOINT_PERIOD'])  # 保存权重的周期
-proposal_eval_weight_num = solver_max_iter / solver_checkpoint_period  # 保存的权重文件的数量
+proposal_eval_weight_num = int(solver_max_iter / solver_checkpoint_period)  # 保存的权重文件的数量
 
 PROPOSAL_EVAL_WEIGHT_NAMES = [str((num+1)*solver_checkpoint_period).rjust(7, '0') for num in range(proposal_eval_weight_num)]  # 构造权重文件名称的数字部分，如： '0125000'
 
