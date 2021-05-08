@@ -105,7 +105,7 @@ def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight
         # ------------------------------------------------------------------------------
         # 借鉴训练时对验证集的做法，使用该权重对测试集进行coco评估
 
-        eval_results = test(cfg, coco_demo.model, distributed)  # 会对  cfg.DATASETS.TEST  指定的数据集进行评估
+        eval_results = test(cfg, coco_demo.model, distributed, weight_name=weight_name)  # 会对  cfg.DATASETS.TEST  指定的数据集进行评估
         print('-' * 48, '评估结果')
         eval_value = list(eval_results['bbox'].values()) + list(eval_results['segm'].values())
         # print(eval_value)

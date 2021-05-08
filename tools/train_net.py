@@ -98,7 +98,7 @@ def train(cfg, local_rank, distributed, use_tensorboard=False, name_str_with_par
     return model
 
 
-def test(cfg, model, distributed):
+def test(cfg, model, distributed, weight_name=None):
     if distributed:
         model = model.module
     torch.cuda.empty_cache()  # TODO check if it helps
@@ -109,7 +109,10 @@ def test(cfg, model, distributed):
     if cfg.OUTPUT_DIR:
         dataset_names = cfg.DATASETS.TEST  # 评估集
         for idx, dataset_name in enumerate(dataset_names):
-            output_folder = os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
+            if weight_name:
+                output_folder = os.path.join(cfg.OUTPUT_DIR, "inference_%s" % weight_name, dataset_name)
+            else:
+                output_folder = os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
             mkdir(output_folder)
             output_folders[idx] = output_folder
     data_loaders_val = make_data_loader(cfg, is_train=False, is_distributed=distributed)
