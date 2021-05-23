@@ -8,7 +8,7 @@ import json
 from skimage.measure import find_contours
 import cv2
 from tqdm import tqdm
-from maskrcnn_benchmark.config import cfg
+# from maskrcnn_benchmark.config import cfg
 from tools.train_net import test
 from predictor import COCODemo
 
@@ -56,18 +56,18 @@ def mask_to_seg(mask):
         verts = np.fliplr(verts) - 1
         seg.append(verts.tolist())
     return seg
-
+  
 
 # 选定部分权重文件后，依次对这些权重文件进行预测评估
-def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight, tune_folder, excel_path, sheet_name, visualize=False, save_json=False):
+def my_evaluate(distributed, cfg, in_folder, weights_output_dir, proposal_eval_weight, tune_folder, excel_path, sheet_name, visualize=False, save_json=False):
     """
     distributed: 多gpu
     in_folder: 'datasets/midea/test/' 测试集
-    weights_output_dir: 训练过程中保存的权重文件夹路径,
-    proposal_eval_weight: 候选的权重文件名称
-    tune_folder: 本次模型参数配置条件下评估测试集的结果存放路径,
-    excel_path: 本次模型参数配置条件下评估测试集的结果记录excel路径
-    sheet_name: excel里sheet的名称
+    weights_output_dir: 训练过程中保存的权重文件夹路径, 'models/%s' % NAME_STR_WITH_PARAMETERS
+    proposal_eval_weight: 候选的权重文件名称, ['model_0125000.pth', ...]
+    tune_folder: 本次模型参数配置条件下评估测试集的结果存放路径, 'tune/%s' % NAME_STR_WITH_PARAMETERS
+    excel_path: 本次模型参数配置条件下评估测试集的结果记录excel路径, 'tune/%s/%s.xlsx' % (NAME_STR_WITH_PARAMETERS, NAME_STR_WITH_PARAMETERS)
+    sheet_name: excel里sheet的名称, 'msrcnn' if MSRCNN else 'mrcnn'
     visualize: 进行predict预测，保存渲染mask后的可视化图片
     save_json: 保存predict预测结果annotations
 
@@ -96,10 +96,6 @@ def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight
             my_test=True
         )
 
-        out_folder = os.path.join(tune_folder, weight_name)  # 预测得到的可视化结果存储路径
-        if not os.path.exists(out_folder):
-            os.makedirs(out_folder)
-
         # ------------------------------------------------------------------------------
         # ------------------------------------------------------------------------------
         # ------------------------------------------------------------------------------
@@ -120,6 +116,11 @@ def my_evaluate(distributed, in_folder, weights_output_dir, proposal_eval_weight
         # ------------------------------------------------------------------------------
         # 使用该权重对测试集进行预测和json持久化
         if visualize or save_json:
+
+            out_folder = os.path.join(tune_folder, weight_name)  # 预测得到的可视化结果存储路径
+            if not os.path.exists(out_folder):
+                os.makedirs(out_folder)
+
             json_dict = dict()
             images = list()
             annotations = list()

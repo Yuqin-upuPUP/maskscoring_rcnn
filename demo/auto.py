@@ -19,9 +19,11 @@ timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 MSRCNN = True
 
 # 训练配置---------------------------------------------------------------------------------------------------------------
-MRCNN_CONFIG_FILE = 'configs/e2e_mask_rcnn_R_50_FPN_1x.yaml'  # mrcnn配置文件
-MSRCNN_CONFIG_FILE = 'configs/e2e_ms_rcnn_R_50_FPN_1x.yaml'  # msrcnn配置文件
-CONFIG_FILE = MSRCNN_CONFIG_FILE if MSRCNN else MRCNN_CONFIG_FILE
+# MRCNN_CONFIG_FILE = 'configs/e2e_mask_rcnn_R_50_FPN_1x.yaml'  # mrcnn配置文件
+# MSRCNN_CONFIG_FILE = 'configs/e2e_ms_rcnn_R_50_FPN_1x.yaml'  # msrcnn配置文件
+# CONFIG_FILE = MSRCNN_CONFIG_FILE if MSRCNN else MRCNN_CONFIG_FILE
+
+CONFIG_FILE = 'configs/e2e_ms_rcnn_R_50_FPN_1x.yaml'
 
 
 LOCAL_RANK = 0  #
@@ -114,6 +116,8 @@ def main():
         )
 
     cfg.merge_from_file(CONFIG_FILE)
+    if not MSRCNN:
+        cfg.merge_from_list(["MODEL.MASKIOU_ON", False])
     cfg.merge_from_list(opts)
     cfg.freeze()
 
@@ -170,8 +174,9 @@ def main():
 
     print('-' * 190, '***** 评估测试集 *****', '-' * 190, sep='\n')
     my_evaluate(distributed,
+                cfg,
                 IN_FOLDER,
-                OPTS_DICT['OUTPUT_DIR'],
+                cfg.OUTPUT_DIR,
                 PROPOSAL_EVAL_WEIGHT,
                 TUNE_FOLDER,
                 EXCEL_PATH,
