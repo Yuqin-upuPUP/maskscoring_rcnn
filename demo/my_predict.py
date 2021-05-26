@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--weights-path',
         default=False,
-        type=bool
+        type=str
     )  # 是否进行可视化图片并保存
     parser.add_argument(
         '--visualize',
@@ -96,13 +96,14 @@ if __name__ == '__main__':
     # 输出待评估的权重
     # print('\n'.join(os.listdir(EVAL_WEIGHTS_PATH)))
     print('-' * 190, '***** 待评估权重 *****', '-' * 190, sep='\n')
-    PROPOSAL_EVAL_WEIGHT = list()
-    for path in args.weights_path:
-        if path.endswith('.pth'):
-            PROPOSAL_EVAL_WEIGHT.append(path)
+    PROPOSAL_EVAL_WEIGHT = list(sorted(filter(lambda filename: filename.endswith('.pth'), os.listdir(args.weights_path)), key=lambda x: int(x[6:-4])))
     print('\n'.join(PROPOSAL_EVAL_WEIGHT))
 
     print('-' * 190, '***** 评估测试集 *****', '-' * 190, sep='\n')
+
+    if not os.path.exists(TUNE_FOLDER):
+        os.makedirs(TUNE_FOLDER)
+
     my_evaluate(args.distributed,
                 cfg,
                 IN_FOLDER,
